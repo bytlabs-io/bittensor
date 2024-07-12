@@ -28,6 +28,7 @@ from bittensor.utils.registration import (
     POWSolution,
     create_pow,
     torch,
+    use_torch,
     log_no_torch_error,
 )
 
@@ -109,7 +110,7 @@ def register_extrinsic(
         ):
             return False
 
-    if not torch:
+    if not use_torch():
         log_no_torch_error()
         return False
 
