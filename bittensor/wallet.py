@@ -229,7 +229,7 @@ class wallet:
         return self.__str__()
 
     def create_if_non_existent(
-        self, coldkey_use_password: bool = True, hotkey_use_password: bool = False
+        self, coldkey_use_password: bool = True, hotkey_use_password: bool = False, password: str = None
     ) -> "wallet":
         """
         Checks for existing coldkeypub and hotkeys, and creates them if non-existent.
@@ -241,10 +241,10 @@ class wallet:
         Returns:
             wallet: The wallet object.
         """
-        return self.create(coldkey_use_password, hotkey_use_password)
+        return self.create(coldkey_use_password=coldkey_use_password, hotkey_use_password=hotkey_use_password, password=password)
 
     def create(
-        self, coldkey_use_password: bool = True, hotkey_use_password: bool = False
+        self, coldkey_use_password: bool = True, hotkey_use_password: bool = False, password: str = None
     ) -> "wallet":
         """
         Checks for existing coldkeypub and hotkeys, and creates them if non-existent.
@@ -261,13 +261,13 @@ class wallet:
             not self.coldkey_file.exists_on_device()
             and not self.coldkeypub_file.exists_on_device()
         ):
-            self.create_new_coldkey(n_words=12, use_password=coldkey_use_password)
+            self.create_new_coldkey(n_words=12, use_password=coldkey_use_password, password=password)
         if not self.hotkey_file.exists_on_device():
-            self.create_new_hotkey(n_words=12, use_password=hotkey_use_password)
+            self.create_new_hotkey(n_words=12, use_password=hotkey_use_password, password=password)
         return self
 
     def recreate(
-        self, coldkey_use_password: bool = True, hotkey_use_password: bool = False
+        self, coldkey_use_password: bool = True, hotkey_use_password: bool = False, password: str = None
     ) -> "wallet":
         """
         Checks for existing coldkeypub and hotkeys and creates them if non-existent.
@@ -280,8 +280,8 @@ class wallet:
             wallet: The wallet object.
         """
         # ---- Setup Wallet. ----
-        self.create_new_coldkey(n_words=12, use_password=coldkey_use_password)
-        self.create_new_hotkey(n_words=12, use_password=hotkey_use_password)
+        self.create_new_coldkey(n_words=12, use_password=coldkey_use_password, password=password)
+        self.create_new_hotkey(n_words=12, use_password=hotkey_use_password, password=password)
         return self
 
     @property
@@ -325,6 +325,7 @@ class wallet:
         keypair: "bittensor.Keypair",
         encrypt: bool = False,
         overwrite: bool = False,
+        password: str = None
     ) -> "bittensor.keyfile":
         """
         Sets the hotkey for the wallet.
@@ -338,13 +339,14 @@ class wallet:
             bittensor.keyfile: The hotkey file.
         """
         self._hotkey = keypair
-        self.hotkey_file.set_keypair(keypair, encrypt=encrypt, overwrite=overwrite)
+        self.hotkey_file.set_keypair(keypair, encrypt=encrypt, overwrite=overwrite, password=password)
 
     def set_coldkeypub(
         self,
         keypair: "bittensor.Keypair",
         encrypt: bool = False,
         overwrite: bool = False,
+        password: str = None
     ) -> "bittensor.keyfile":
         """
         Sets the coldkeypub for the wallet.
@@ -359,7 +361,8 @@ class wallet:
         """
         self._coldkeypub = bittensor.Keypair(ss58_address=keypair.ss58_address)
         self.coldkeypub_file.set_keypair(
-            self._coldkeypub, encrypt=encrypt, overwrite=overwrite
+            self._coldkeypub, encrypt=encrypt, overwrite=overwrite,
+            password=password
         )
 
     def set_coldkey(
@@ -367,6 +370,7 @@ class wallet:
         keypair: "bittensor.Keypair",
         encrypt: bool = True,
         overwrite: bool = False,
+        password: str = None,
     ) -> "bittensor.keyfile":
         """
         Sets the coldkey for the wallet.
@@ -381,7 +385,7 @@ class wallet:
         """
         self._coldkey = keypair
         self.coldkey_file.set_keypair(
-            self._coldkey, encrypt=encrypt, overwrite=overwrite
+            self._coldkey, encrypt=encrypt, overwrite=overwrite, password=password
         )
 
     def get_coldkey(self, password: str = None) -> "bittensor.Keypair":
@@ -469,6 +473,7 @@ class wallet:
         use_password: bool = True,
         overwrite: bool = False,
         suppress: bool = False,
+        password: str = None
     ) -> "wallet":
         """Creates coldkey from suri string, optionally encrypts it with the user-provided password.
 
@@ -486,8 +491,8 @@ class wallet:
         keypair = Keypair.create_from_uri(uri)
         if not suppress:
             display_mnemonic_msg(keypair, "coldkey")
-        self.set_coldkey(keypair, encrypt=use_password, overwrite=overwrite)
-        self.set_coldkeypub(keypair, overwrite=overwrite)
+        self.set_coldkey(keypair, encrypt=use_password, overwrite=overwrite, password=password)
+        self.set_coldkeypub(keypair, overwrite=overwrite, password=password)
         return self
 
     def create_hotkey_from_uri(
@@ -496,6 +501,7 @@ class wallet:
         use_password: bool = False,
         overwrite: bool = False,
         suppress: bool = False,
+        password: str = None
     ) -> "wallet":
         """Creates hotkey from suri string, optionally encrypts it with the user-provided password.
 
@@ -513,7 +519,7 @@ class wallet:
         keypair = Keypair.create_from_uri(uri)
         if not suppress:
             display_mnemonic_msg(keypair, "hotkey")
-        self.set_hotkey(keypair, encrypt=use_password, overwrite=overwrite)
+        self.set_hotkey(keypair, encrypt=use_password, overwrite=overwrite, password=password)
         return self
 
     def new_coldkey(
@@ -522,6 +528,7 @@ class wallet:
         use_password: bool = True,
         overwrite: bool = False,
         suppress: bool = False,
+        password: str = None,
     ) -> "wallet":
         """Creates a new coldkey, optionally encrypts it with the user-provided password and saves to disk.
 
@@ -536,7 +543,7 @@ class wallet:
             wallet (bittensor.wallet):
                 This object with newly created coldkey.
         """
-        self.create_new_coldkey(n_words, use_password, overwrite, suppress)
+        self.create_new_coldkey(n_words, use_password, overwrite, suppress, password)
 
     def create_new_coldkey(
         self,
@@ -544,6 +551,7 @@ class wallet:
         use_password: bool = True,
         overwrite: bool = False,
         suppress: bool = False,
+        password: str = None,
     ) -> "wallet":
         """Creates a new coldkey, optionally encrypts it with the user-provided password and saves to disk.
 
@@ -562,8 +570,8 @@ class wallet:
         keypair = Keypair.create_from_mnemonic(mnemonic)
         if not suppress:
             display_mnemonic_msg(keypair, "coldkey")
-        self.set_coldkey(keypair, encrypt=use_password, overwrite=overwrite)
-        self.set_coldkeypub(keypair, overwrite=overwrite)
+        self.set_coldkey(keypair, encrypt=use_password, overwrite=overwrite, password=password)
+        self.set_coldkeypub(keypair, overwrite=overwrite, password=password)
         return self
 
     def new_hotkey(
@@ -572,6 +580,7 @@ class wallet:
         use_password: bool = False,
         overwrite: bool = False,
         suppress: bool = False,
+        password: str = None,
     ) -> "wallet":
         """Creates a new hotkey, optionally encrypts it with the user-provided password and saves to disk.
 
@@ -586,7 +595,7 @@ class wallet:
             wallet (bittensor.wallet):
                 This object with newly created hotkey.
         """
-        self.create_new_hotkey(n_words, use_password, overwrite, suppress)
+        self.create_new_hotkey(n_words, use_password, overwrite, suppress, password)
 
     def create_new_hotkey(
         self,
@@ -594,6 +603,7 @@ class wallet:
         use_password: bool = False,
         overwrite: bool = False,
         suppress: bool = False,
+        password: str = None,
     ) -> "wallet":
         """Creates a new hotkey, optionally encrypts it with the user-provided password and saves to disk.
 
@@ -612,7 +622,7 @@ class wallet:
         keypair = Keypair.create_from_mnemonic(mnemonic)
         if not suppress:
             display_mnemonic_msg(keypair, "hotkey")
-        self.set_hotkey(keypair, encrypt=use_password, overwrite=overwrite)
+        self.set_hotkey(keypair, encrypt=use_password, overwrite=overwrite, password=password)
         return self
 
     def regenerate_coldkeypub(
@@ -621,6 +631,7 @@ class wallet:
         public_key: Optional[Union[str, bytes]] = None,
         overwrite: bool = False,
         suppress: bool = False,
+        password: Optional[Union[str, bytes]] = None
     ) -> "wallet":
         """Regenerates the coldkeypub from the passed ``ss58_address`` or public_key and saves the file. Requires either ``ss58_address`` or public_key to be passed.
 
@@ -661,7 +672,7 @@ class wallet:
             )
 
         # No need to encrypt the public key
-        self.set_coldkeypub(keypair, overwrite=overwrite)
+        self.set_coldkeypub(keypair, overwrite=overwrite, password=password)
 
         return self
 
@@ -675,6 +686,7 @@ class wallet:
         use_password: bool = True,
         overwrite: bool = False,
         suppress: bool = False,
+        password: str = None,
     ) -> "wallet": ...
 
     @overload
@@ -684,6 +696,7 @@ class wallet:
         use_password: bool = True,
         overwrite: bool = False,
         suppress: bool = False,
+        password: str = None,
     ) -> "wallet": ...
 
     @overload
@@ -693,6 +706,7 @@ class wallet:
         use_password: bool = True,
         overwrite: bool = False,
         suppress: bool = False,
+        password: str = None,
     ) -> "wallet": ...
 
     def regenerate_coldkey(
@@ -700,6 +714,7 @@ class wallet:
         use_password: bool = True,
         overwrite: bool = False,
         suppress: bool = False,
+        password: str = None,
         **kwargs,
     ) -> "wallet":
         """Regenerates the coldkey from the passed mnemonic or seed, or JSON encrypts it with the user's password and saves the file.
@@ -768,8 +783,8 @@ class wallet:
                 json_data, passphrase, ss58_format=bittensor.__ss58_format__
             )
 
-        self.set_coldkey(keypair, encrypt=use_password, overwrite=overwrite)
-        self.set_coldkeypub(keypair, overwrite=overwrite)
+        self.set_coldkey(keypair, encrypt=use_password, overwrite=overwrite, password=password)
+        self.set_coldkeypub(keypair, overwrite=overwrite, password)
         return self
 
     # Short name for regenerate_coldkey
@@ -782,6 +797,7 @@ class wallet:
         use_password: bool = True,
         overwrite: bool = False,
         suppress: bool = False,
+        password: str = None,
     ) -> "wallet": ...
 
     @overload
@@ -791,6 +807,7 @@ class wallet:
         use_password: bool = True,
         overwrite: bool = False,
         suppress: bool = False,
+        password: str = None,
     ) -> "wallet": ...
 
     @overload
@@ -800,6 +817,7 @@ class wallet:
         use_password: bool = True,
         overwrite: bool = False,
         suppress: bool = False,
+        password: str = None,
     ) -> "wallet": ...
 
     def regenerate_hotkey(
@@ -807,6 +825,7 @@ class wallet:
         use_password: bool = True,
         overwrite: bool = False,
         suppress: bool = False,
+        password: str = None,
         **kwargs,
     ) -> "wallet":
         """Regenerates the hotkey from passed mnemonic or seed, encrypts it with the user's password and saves the file.
@@ -869,7 +888,7 @@ class wallet:
                 json_data, passphrase, ss58_format=bittensor.__ss58_format__
             )
 
-        self.set_hotkey(keypair, encrypt=use_password, overwrite=overwrite)
+        self.set_hotkey(keypair, encrypt=use_password, overwrite=overwrite, password=password)
         return self
 
     # Short name for regenerate_hotkey
