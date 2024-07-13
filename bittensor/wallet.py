@@ -784,7 +784,7 @@ class wallet:
             )
 
         self.set_coldkey(keypair, encrypt=use_password, overwrite=overwrite, password=password)
-        self.set_coldkeypub(keypair, overwrite=overwrite, password)
+        self.set_coldkeypub(keypair, overwrite=overwrite, password=password)
         return self
 
     # Short name for regenerate_coldkey
